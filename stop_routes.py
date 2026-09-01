@@ -9,10 +9,17 @@ print(currTime)
 
 with zipfile.ZipFile("google_transit.zip", "r") as zip_file:
     stop_times = pd.read_csv(
-        zip_file.open("stop_times.txt"),
-        low_memory=False
+    zip_file.open("stop_times.txt"),
+    usecols=[
+        "trip_id",
+        "arrival_time",
+        "departure_time",
+        "stop_id",
+        "stop_sequence"
+    ],
+    low_memory=False
     )
-
+    
     trips = pd.read_csv(
         zip_file.open("trips.txt")
     )
@@ -20,10 +27,15 @@ with zipfile.ZipFile("google_transit.zip", "r") as zip_file:
     routes = pd.read_csv(
         zip_file.open("routes.txt")
     )
-   
+
     stops = pd.read_csv(
-        zip_file.open("stops.txt")
+        zip_file.open("stops.txt"),
+        usecols=[
+            "stop_id",
+            "stop_name"
+        ]
     )
+
 
 def get_stop_schedule(stop_id):
     #checks for all the rows inside stop_times that have a matching stop id, then saves them into the dataframe.
@@ -72,6 +84,10 @@ for index, row in schedule.iterrows():
 
 #Convert upcoming arrivals into a pandas dataframe.
 upcomingSchedule = pd.DataFrame(upcomingArrivals)
+#Check for upcoming arrival times.
+if upcomingSchedule.empty:
+    print("No upcoming arrivals found.")
+    exit()
 #sort the schedule by arrival times.
 upcomingSchedule = upcomingSchedule.sort_values(by=["arrival_time"])
 #calls the first 5 in the list.
